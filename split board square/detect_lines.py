@@ -64,6 +64,13 @@ X_max, Y_max, _ = img.shape
 horizontal_lines = [[0, l[1], X_max, l[3]] for l in horizontal_lines]
 vertical_lines = [[l[0], 0, l[2], Y_max] for l in vertical_lines]
 
+# Vou criar uma linha horizontal e vertical nas bordas da imagem
+# Primeiro as horizontais no topo e fundo da img
+# OBS: Do jeito que o cv.line (pra desenhar) funciona, a linha horizontal no pé da imagem nao vai aparecer
+horizontal_lines.append([0, 0 , X_max, 0])
+horizontal_lines.append([0, Y_max , X_max, Y_max])
+vertical_lines.append([0, 0, 0, Y_max])
+vertical_lines.append([X_max, 0, X_max, Y_max])
 
 ### SEPARANDO SOMENTE AS LINHAS DO BOARD
 # Primeiro eu quero garantir q to ordenando as linhas horizontais e verticais na linha na ordem correta
