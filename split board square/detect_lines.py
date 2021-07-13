@@ -89,18 +89,46 @@ vline_gaps = np.diff(vline_xs)
 
 print(hline_gaps, vline_gaps)
 
-# TODO: Agora eu queria filtrar esses valores porém aceitando valores parecidos. E dai finalmente conferir se tem 8 gaps desses e pega as 9 linhas do board.
-# TODO: Talvez seja uma boa adicionar linhas nas bordas da img
+# Vou pegar o valor mais popular dos gaps horizontais. Preciso tirar do numpy pra funcionar o count
+h_mode = max(set(hline_gaps), key=list(hline_gaps).count)
+v_mode = max(set(vline_gaps), key=list(vline_gaps).count)
+
+# O objetivo aqui agora é achar os 'indexes' onde esses valores mais populares acontecem, e garantir q eles são consecutivos
+hline_indexes = np.argwhere(hline_gaps == h_mode).flatten()
+vline_indexes = np.argwhere(vline_gaps == v_mode).flatten()
+
+# Definindo uma função (aqui msm pra ficar organizado) que testa se os valores são consecutivos
+is_consecutive = lambda ls: sorted(ls) == list(range(min(ls), max(ls) + 1))
+
+# Caso a lista não seja consecutiva ou não tenha 8 gaps (ou seja, entre as 9 linhas do board)
+if not is_consecutive(hline_indexes) or len(hline_indexes) < 8:
+    print("Não foi possível detectar o board")
+    quit()
+
+if not is_consecutive(vline_indexes) or len(vline_indexes) < 8:
+    print("Não foi possível detectar o board")
+    quit()
+
+# Agora vou filtrar as linhas horizontais/verticais 
+# Primeiro nos indexes, se eu achei o index 1 isso significa que as linhas q criam aquele gap, são a de index 1 e 2 da lista.
+# Ou seja, preciso pegar todos os mesmos indexes e um a mais no final
+hline_indexes = np.append(hline_indexes, [hline_indexes[-1] + 1])
+vline_indexes = np.append(vline_indexes, [vline_indexes[-1] + 1])
+
+board_horizontal_lines = np.array(horizontal_lines)
+board_horizontal_lines = board_horizontal_lines[hline_indexes]
+board_vertical_lines = np.array(vertical_lines)
+board_vertical_lines = board_vertical_lines[vline_indexes]
 
 
-### DESENHANDO LINHAS
+### DESENHANDO LINHAS (Somente as do board)
 # Linhas horizontais em azul
-for line in horizontal_lines:
+for line in board_horizontal_lines:
     x1,y1,x2,y2 = line
     cv.line(img,(x1,y1),(x2,y2),(255, 0, 0) ,2)
 
 # Linhas verticais em vermelho
-for line in vertical_lines:
+for line in board_vertical_lines:
     x1,y1,x2,y2 = line
     cv.line(img,(x1,y1),(x2,y2),(0, 0, 255) ,2)
 
