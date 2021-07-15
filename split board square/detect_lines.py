@@ -87,8 +87,6 @@ hline_gaps = np.diff(hline_ys)
 vline_xs = [l[0] for l in vertical_lines]
 vline_gaps = np.diff(vline_xs)
 
-print(hline_gaps, vline_gaps)
-
 # Vou pegar o valor mais popular dos gaps horizontais. Preciso tirar do numpy pra funcionar o count
 h_mode = max(set(hline_gaps), key=list(hline_gaps).count)
 v_mode = max(set(vline_gaps), key=list(vline_gaps).count)
@@ -135,14 +133,51 @@ for line in board_vertical_lines:
 
 ### PROCURANDO INTERSEÇÕES
 intersections = []
+# TODO: Traduzir os pontos pra uma matriz interpretavel
 
-for hline in horizontal_lines:
-    for vline in vertical_lines:
+for hline in board_horizontal_lines:
+    for vline in board_vertical_lines:
         intersec = get_intersection(make_line(hline[:2], hline[2:]),
                                     make_line(vline[:2], vline[2:]))
         intersections.append(intersec)
 
-#print(intersections)
+intersections.sort()
+
+board_points = np.array([
+    [intersections[i] for i in range(0,9)],
+    [intersections[i] for i in range(9,18)],
+    [intersections[i] for i in range(18,27)],
+    [intersections[i] for i in range(27,36)],
+    [intersections[i] for i in range(36,45)],
+    [intersections[i] for i in range(45,54)],
+    [intersections[i] for i in range(54,63)],
+    [intersections[i] for i in range(63,72)],
+    [intersections[i] for i in range(72,81)],
+])
+
+# Os quadrados do board são definido pelo (x1, y1) e (x2, y2) do topo esquerda e baixo direita
+board_squares = np.array([
+    [(board_points[0][i], board_points[1][i+1])  for i in range(0,8)],
+    [(board_points[1][i], board_points[2][i+1])  for i in range(0,8)],
+    [(board_points[2][i], board_points[3][i+1])  for i in range(0,8)],
+    [(board_points[3][i], board_points[4][i+1])  for i in range(0,8)],
+    [(board_points[4][i], board_points[5][i+1])  for i in range(0,8)],
+    [(board_points[5][i], board_points[6][i+1])  for i in range(0,8)],
+    [(board_points[6][i], board_points[7][i+1])  for i in range(0,8)],
+    [(board_points[7][i], board_points[8][i+1])  for i in range(0,8)],
+])
+board_squares = board_squares.astype(int)
+
+#cv.rectangle(img=img, pt1=tuple(board_squares[0][0][0]), pt2=tuple(board_squares[0][0][1]), color=(0,0,0), thickness=5)
+for col in board_squares:
+    for row in col:
+        crop = img[row[0][1]:row[1][1], row[0][0]:row[1][0]]
+        cv.imshow('crop', crop)
+        cv.waitKey(300)
 
 
-cv.imwrite(out_path,img)
+# board_points = [
+#     [i for i ]
+# ]
+
+#cv.imwrite(out_path,img)
