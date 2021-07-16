@@ -80,7 +80,7 @@ for i in range(n_test):
 
 # Copia as imagens de celulas vazias pra pasta de treino.
 for i, empty_cell in enumerate(cell_files):
-    shutil.copy(empty_cell, os.path.join(HERE, '..', 'cell_dataset', 'train', 'empty', f'{i}.png'))
+    shutil.copy(empty_cell, os.path.join(HERE, '..', 'cell_dataset', 'test', 'empty', f'{i}.png'))
 
 # Validate
 # n para cada tipo de peça (pawn, bishop,...)

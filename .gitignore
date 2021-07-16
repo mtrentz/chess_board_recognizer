@@ -1,2 +1,5 @@
 cell_dataset/train.zip
 cell_dataset/test.7z
+*.7z
+*.zip
+*.png
