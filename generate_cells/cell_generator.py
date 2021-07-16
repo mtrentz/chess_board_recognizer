@@ -12,7 +12,7 @@ def cell_generator(force_color=None, force_piece=None, piece_scale_range=(1,1), 
 
     Args:
         force_color (str, optional): 'b' for black pieces, 'w' for white. Defaults to None.
-        force_piece ([type], optional): 'p' or 'pawn', for pawn, etc... 'Defaults to None.
+        force_piece ([type], optional): 'P' or 'pawn', for pawn, etc... Defaults to None.
         piece_scale_range (tuple, optional): (min_scale, max_scale), values between 0 and 1. 
         vertical_range (tuple, optional): (-max_pixels, +max_pixels) for vertical offset. Defaults to (0,0).
         horizontal_range (tuple, optional): (-max_pixels, +max_pixels) for horizontal offset. Defaults to (0,0).
@@ -36,12 +36,12 @@ def cell_generator(force_color=None, force_piece=None, piece_scale_range=(1,1), 
         if len(force_piece) > 1:
             force_piece = force_piece.lower()
             pieces_dict = {
-                'pawn': 'p',
-                'knight': 'n',
-                'bishop': 'b',
-                'rook': 'r',
-                'queen': 'q',
-                'king': 'k'
+                'pawn': 'P',
+                'knight': 'N',
+                'bishop': 'B',
+                'rook': 'R',
+                'queen': 'Q',
+                'king': 'K'
             }
             force_piece = pieces_dict[force_piece]
 
