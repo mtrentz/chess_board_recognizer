@@ -13,7 +13,7 @@ CELLS_DIR = os.path.join(HERE, 'cells')
 cell_files = glob(os.path.join(CELLS_DIR, '*.png'))
 
 ### CRIANDO ESTRUTURA DOS DIRETORIOS
-main_dir = ['cell_dataset']
+main_dir = ['mini_dataset']
 sub_dir = ['train', 'test', 'validate']
 sub_sub_dir = ['bP', 'wP', 'bN', 'wN', 'bB', 'wB', 'bR', 'wR', 'bQ', 'wQ', 'bK', 'wK']
 #sub_sub_dir = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king']
@@ -40,7 +40,7 @@ vertical_range =(-10, 10)
 
 # Train
 # n para cada tipo de peça (bP, wB,...)
-n_train = 10000
+n_train = 250
 for i in range(n_train):
     print(f'Gerando train dataset: {i}/{n_train}')
     for piece in sub_sub_dir:
@@ -53,17 +53,17 @@ for i in range(n_train):
                                         horizontal_range=horizontal_range, 
                                         vertical_range=vertical_range))
 
-        im.save(os.path.join(HERE, '..', 'cell_dataset', 'train', piece, f'{i}.png'))
+        im.save(os.path.join(HERE, '..', main_dir[0], 'train', piece, f'{i}.png'))
 
 # Copia as imagens de celulas vazias pra pasta de treino.
 for i, empty_cell in enumerate(cell_files):
-    shutil.copy(empty_cell, os.path.join(HERE, '..', 'cell_dataset', 'train', 'empty', f'{i}.png'))
+    shutil.copy(empty_cell, os.path.join(HERE, '..', main_dir[0], 'train', 'empty', f'{i}.png'))
 
 
 
 # Test
 # n para cada tipo de peça (pawn, bishop,...)
-n_test = 1000
+n_test = 50
 for i in range(n_test):
     print(f'Gerando test dataset: {i}/{n_test}')
     for piece in sub_sub_dir:
@@ -76,15 +76,15 @@ for i in range(n_test):
                                         horizontal_range=horizontal_range, 
                                         vertical_range=vertical_range))
 
-        im.save(os.path.join(HERE, '..', 'cell_dataset', 'test', piece, f'{i}.png'))
+        im.save(os.path.join(HERE, '..', main_dir[0], 'test', piece, f'{i}.png'))
 
 # Copia as imagens de celulas vazias pra pasta de treino.
 for i, empty_cell in enumerate(cell_files):
-    shutil.copy(empty_cell, os.path.join(HERE, '..', 'cell_dataset', 'test', 'empty', f'{i}.png'))
+    shutil.copy(empty_cell, os.path.join(HERE, '..', main_dir[0], 'test', 'empty', f'{i}.png'))
 
 # Validate
 # n para cada tipo de peça (pawn, bishop,...)
-n_validate = 1000
+n_validate = 50
 for i in range(n_validate):
     print(f'Gerando validation dataset: {i}/{n_validate}')
     for piece in sub_sub_dir:
@@ -97,11 +97,11 @@ for i in range(n_validate):
                                         horizontal_range=horizontal_range, 
                                         vertical_range=vertical_range))
 
-        im.save(os.path.join(HERE, '..', 'cell_dataset', 'validate', piece, f'{i}.png'))
+        im.save(os.path.join(HERE, '..', main_dir[0], 'validate', piece, f'{i}.png'))
 
 # Copia as imagens de celulas vazias pra pasta de treino.
 for i, empty_cell in enumerate(cell_files):
-    shutil.copy(empty_cell, os.path.join(HERE, '..', 'cell_dataset', 'validate', 'empty', f'{i}.png'))
+    shutil.copy(empty_cell, os.path.join(HERE, '..', main_dir[0], 'validate', 'empty', f'{i}.png'))
 
 
 
