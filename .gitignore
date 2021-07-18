@@ -1,5 +1,4 @@
-cell_dataset/train.zip
-cell_dataset/test.7z
+/cell_dataset
+/mini_dataset
 *.7z
 *.zip
-*.png
