@@ -180,23 +180,39 @@ board_squares = board_squares.astype(int)
 model = torch.load(os.path.join(HERE, 'torch_model.pth'), map_location=torch.device('cpu'))
 model.eval()
 
-# class_map = {
-#     '0': 'bB',
-#     '1': 'bK',
-#     '2': 'bN',
-#     '3': 'bP',
-#     '4': 'bQ',
-#     '5': 'bR',
-#     '6': 'empty',
-#     '7': 'wB',
-#     '8': 'wK',
-#     '9': 'wN',
-#     '10': 'wP',
-#     '11': 'wQ',
-#     '12': 'wR',
-# }
-
 class_map = {
+    '0': 'bB',
+    '1': 'bK',
+    '2': 'bN',
+    '3': 'bP',
+    '4': 'bQ',
+    '5': 'bR',
+    '6': 'empty',
+    '7': 'wB',
+    '8': 'wK',
+    '9': 'wN',
+    '10': 'wP',
+    '11': 'wQ',
+    '12': 'wR',
+}
+
+code_map = {
+    '0': ' \u265d ',
+    '1': ' \u265a ',
+    '2': ' \u265e ',
+    '3': ' \u265f ',
+    '4': ' \u265b ',
+    '5': ' \u265c ',
+    '6': '   ',
+    '7': ' \u2657 ',
+    '8': ' \u2654 ',
+    '9': ' \u2658 ',
+    '10': ' \u2659 ',
+    '11': ' \u2655 ',
+    '12': ' \u2656 ',
+}
+
+pt_class_map = {
     '0': 'Bispo - Preto',
     '1': 'Rei - Preto',
     '2': 'Cavalo - Preto',
@@ -212,9 +228,11 @@ class_map = {
     '12': 'Torre- Branco',
 }
 
+named_board_pieces = np.zeros((8,8)).astype(str)
+
 #cv.rectangle(img=img, pt1=tuple(board_squares[0][0][0]), pt2=tuple(board_squares[0][0][1]), color=(0,0,0), thickness=5)
-for col in board_squares:
-    for row in col:
+for col_index, col in enumerate(board_squares):
+    for row_index, row in enumerate(col):
 
         data_transforms = transforms.Compose([
                 transforms.Resize((116, 116)),
@@ -228,11 +246,17 @@ for col in board_squares:
         pred = model(crop)
         pred = pred.argmax(dim=1).numpy()
 
-        class_name = class_map[str(pred[0])]
-        cv_crop = cv.resize(cv_crop, (464, 464))
-        cv.imshow('crop', cv_crop)
-        cv.setWindowTitle('crop', class_name)
-        cv.waitKey(0)
+        #named_board_pieces[row_index, col_index] = class_map[str(int(pred[0]))]
+        named_board_pieces[row_index, col_index] = code_map[str(int(pred[0]))]
+
+        #class_name = pt_class_map[str(pred[0])]
+
+        # cv_crop = cv.resize(cv_crop, (464, 464))
+        # cv.imshow('crop', cv_crop)
+        # cv.setWindowTitle('crop', class_name)
+        # cv.waitKey(0)
+
+print(named_board_pieces)
         
 
 
