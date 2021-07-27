@@ -18,11 +18,9 @@ class ChessRecognizer:
         self.board_horizontal_lines, self.board_vertical_lines = self.board_lines(self.img_gray)
         self.board_squares = self.board_squares(self.board_horizontal_lines, self.board_vertical_lines)
         self.predicted_board = self.predict_board(self.img, self.model, self.board_squares)
-        self.predicted_board_pt = self._translate_pred_to_pt(self.predicted_board)
-        self.predicted_board_unicode = self._translate_pred_to_unicode(self.predicted_board)
     
     def __repr__(self):
-        return str(pprint(self.predicted_board_unicode.tolist()))
+        return str(pprint(self.predicted_board.tolist()))
 
     def _get_lines(self, img_gray):
         """Busca as linhas da imagem"""
@@ -185,47 +183,6 @@ class ChessRecognizer:
 
         return board_squares
     
-    def _translate_pred_to_pt(self, predicted_board):
-        pt_class_map = {
-            'bB': 'Bispo - Preto',
-            'bK': 'Rei - Preto',
-            'bN': 'Cavalo - Preto',
-            'bP': 'Peao - Preto',
-            'bQ': 'Rainha - Preto',
-            'bR': 'Torre - Preto',
-            'empty': 'Vazio',
-            'wB': 'Bispo - Branco',
-            'wK': 'Rei - Branco',
-            'wN': 'Cavalo - Branco',
-            'wP': 'Peao - Branco',
-            'wQ': 'Rainha- Branco',
-            'wR': 'Torre- Branco',
-        }
-
-        predicted_board = np.vectorize(pt_class_map.get)(predicted_board)
-        
-        return predicted_board
-    
-    def _translate_pred_to_unicode(sellf, predicted_board):
-
-        code_map = {
-            'bB': ' \u265d ',
-            'bK': ' \u265a ',
-            'bN': ' \u265e ',
-            'bP': ' \u265f ',
-            'bQ': ' \u265b ',
-            'bR': ' \u265c ',
-            'empty': '   ',
-            'wB': ' \u2657 ',
-            'wK': ' \u2654 ',
-            'wN': ' \u2658 ',
-            'wP': ' \u2659 ',
-            'wQ': ' \u2655 ',
-            'wR': ' \u2656 ',
-        }
-        predicted_board = np.vectorize(code_map.get)(predicted_board)
-
-        return predicted_board
     
     def board_lines(self, img_gray):
 
@@ -303,11 +260,56 @@ class ChessRecognizer:
         
         return predicted_board
 
+def translate_pred_to_pt(predicted_board):
+    pt_class_map = {
+        'bB': 'Bispo - Preto',
+        'bK': 'Rei - Preto',
+        'bN': 'Cavalo - Preto',
+        'bP': 'Peao - Preto',
+        'bQ': 'Rainha - Preto',
+        'bR': 'Torre - Preto',
+        'empty': 'Vazio',
+        'wB': 'Bispo - Branco',
+        'wK': 'Rei - Branco',
+        'wN': 'Cavalo - Branco',
+        'wP': 'Peao - Branco',
+        'wQ': 'Rainha- Branco',
+        'wR': 'Torre- Branco',
+    }
+
+    translated_board = np.vectorize(pt_class_map.get)(predicted_board)
+    
+    return translated_board
+
+def translate_pred_to_unicode(predicted_board):
+
+    code_map = {
+        'bB': ' \u265d ',
+        'bK': ' \u265a ',
+        'bN': ' \u265e ',
+        'bP': ' \u265f ',
+        'bQ': ' \u265b ',
+        'bR': ' \u265c ',
+        'empty': '   ',
+        'wB': ' \u2657 ',
+        'wK': ' \u2654 ',
+        'wN': ' \u2658 ',
+        'wP': ' \u2659 ',
+        'wQ': ' \u2655 ',
+        'wR': ' \u2656 ',
+    }
+    translated_board = np.vectorize(code_map.get)(predicted_board)
+
+    return translated_board
+
 
 if __name__ == "__main__":
     rec = ChessRecognizer('chessboard.png')
+    code_board = rec.predicted_board
+
     # rec.show_board_lines()
-    print(rec)
+    #print(rec)
+    print(translate_pred_to_unicode(code_board))
 
 
 
