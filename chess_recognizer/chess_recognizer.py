@@ -305,11 +305,18 @@ def translate_pred_to_unicode(predicted_board):
 
 if __name__ == "__main__":
     rec = ChessRecognizer('chessboard.png')
-    code_board = rec.predicted_board
+    lines = rec._get_lines
+    print(lines)
 
-    # rec.show_board_lines()
-    #print(rec)
-    print(translate_pred_to_unicode(code_board))
+
+
+
+
+    # code_board = rec.predicted_board
+
+    # # rec.show_board_lines()
+    # #print(rec)
+    # print(translate_pred_to_unicode(code_board))
 
 
 
