@@ -21,7 +21,9 @@ def get_intersection(L1, L2):
     else:
         return False
 
-in_path = os.path.join('chessboard.png')
+HERE = sys.path[0]
+
+in_path = os.path.join(HERE, 'chessboard.png')
 out_path = os.path.join('houghlines.png')
 
 ### LENDO IMAGEM E BUSCANDO LINHAS
