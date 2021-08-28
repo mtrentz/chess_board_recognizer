@@ -1,32 +1,50 @@
 import cv2 as cv
 from PIL import Image
 import os
-import sys
 import numpy as np
-import matplotlib.pyplot as plt
 import torch
 from torchvision import transforms
-from pprint import pprint
+import io
 
 class ChessRecognizer:
-    def __init__(self, img_path):
-        self.img = cv.imread(img_path)
+    def __init__(self, PIL_img):
+        self.img = cv.cvtColor(np.array(PIL_img), cv.COLOR_RGB2BGR)
         self.img_gray = cv.cvtColor(self.img,cv.COLOR_BGR2GRAY)
         self.X_max, self.Y_max, _ = self.img.shape
-        self.HERE = sys.path[0]
-        self.model = torch.load(os.path.join(self.HERE, 'torch_model.pth'), map_location=torch.device('cpu'))
-        self.board_horizontal_lines, self.board_vertical_lines = self.board_lines(self.img_gray)
-        self.board_squares = self.board_squares(self.board_horizontal_lines, self.board_vertical_lines)
-        self.predicted_board = self.predict_board(self.img, self.model, self.board_squares)
+        self.HERE = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
+        # self.model = torch.load(os.path.join(self.HERE, 'torch_model.pth'), map_location=torch.device('cpu'))
+        # self.board_horizontal_lines, self.board_vertical_lines = self.board_lines(self.img_gray)
+        # self.board_squares = self.board_squares(self.board_horizontal_lines, self.board_vertical_lines)
+        # self.predicted_board = self.predict_board(self.img, self.model, self.board_squares)
     
-    def __repr__(self):
-        return str(pprint(self.predicted_board.tolist()))
 
     def _get_lines(self, img_gray):
         """Busca as linhas da imagem"""
 
-        edges = cv.Canny(img_gray,50,150,apertureSize = 3)
-        lines = cv.HoughLinesP(edges,1,np.pi/180,100,minLineLength=100,maxLineGap=10)
+        edges = cv.Canny(self.img_gray,50,150,apertureSize = 3)
+        # edges = cv.Canny(self.img,50,150,apertureSize = 3)
+        lines = cv.HoughLinesP(edges, 1, np.pi/180, 100, minLineLength=100, maxLineGap=10)
+
+
+        # -> desse post https://stackoverflow.com/questions/45322630/how-to-detect-lines-in-opencv
+        # kernel_size = 3
+        # blur_gray = cv.GaussianBlur(img_gray,(kernel_size, kernel_size),0)
+
+        # low_threshold = 10
+        # high_threshold = 100
+        # edges = cv.Canny(blur_gray, low_threshold, high_threshold)
+
+        # rho = 1  # distance resolution in pixels of the Hough grid
+        # theta = np.pi / 180  # angular resolution in radians of the Hough grid
+        # threshold = 15  # minimum number of votes (intersections in Hough grid cell)
+        # min_line_length = 50  # minimum number of pixels making up a line
+        # max_line_gap = 20  # maximum gap in pixels between connectable line segments
+        # line_image = np.copy(self.img) * 0  # creating a blank to draw lines on
+
+        # # Run Hough on edge detected image
+        # # Output "lines" is an array containing endpoints of detected line segments
+        # lines = cv.HoughLinesP(edges, rho, theta, threshold, np.array([]),
+        #                     min_line_length, max_line_gap)
 
         return lines
 
@@ -228,7 +246,7 @@ class ChessRecognizer:
             '3': 'bP',
             '4': 'bQ',
             '5': 'bR',
-            '6': 'empty',
+            '6': 'em',
             '7': 'wB',
             '8': 'wK',
             '9': 'wN',
@@ -268,7 +286,7 @@ def translate_pred_to_pt(predicted_board):
         'bP': 'Peao - Preto',
         'bQ': 'Rainha - Preto',
         'bR': 'Torre - Preto',
-        'empty': 'Vazio',
+        'em': 'Vazio',
         'wB': 'Bispo - Branco',
         'wK': 'Rei - Branco',
         'wN': 'Cavalo - Branco',
@@ -284,39 +302,132 @@ def translate_pred_to_pt(predicted_board):
 def translate_pred_to_unicode(predicted_board):
 
     code_map = {
-        'bB': ' \u265d ',
-        'bK': ' \u265a ',
-        'bN': ' \u265e ',
-        'bP': ' \u265f ',
-        'bQ': ' \u265b ',
-        'bR': ' \u265c ',
-        'empty': '   ',
-        'wB': ' \u2657 ',
-        'wK': ' \u2654 ',
-        'wN': ' \u2658 ',
-        'wP': ' \u2659 ',
-        'wQ': ' \u2655 ',
-        'wR': ' \u2656 ',
+        'bB': '\u265d',
+        'bK': '\u265a',
+        'bN': '\u265e',
+        'bP': '\u265f',
+        'bQ': '\u265b',
+        'bR': '\u265c',
+        'em': '',
+        'wB': '\u2657',
+        'wK': '\u2654',
+        'wN': '\u2658',
+        'wP': '\u2659',
+        'wQ': '\u2655',
+        'wR': '\u2656',
     }
     translated_board = np.vectorize(code_map.get)(predicted_board)
 
     return translated_board
 
 
+def board_to_fen(board):
+    # Coloca tudo em lowercase
+    board = np.char.lower(board)
+
+    # Use StringIO to build string more efficiently than concatenating
+    with io.StringIO() as s:
+        for row in board:
+            empty = 0
+            for cell in row:
+                c = cell[0]
+                if c in ('w', 'b'):
+                    if empty > 0:
+                        s.write(str(empty))
+                        empty = 0
+                    s.write(cell[1].upper() if c == 'w' else cell[1].lower())
+                else:
+                    empty += 1
+            if empty > 0:
+                s.write(str(empty))
+            s.write('/')
+        # Move one position back to overwrite last '/'
+        s.seek(s.tell() - 1)
+        # If you do not have the additional information choose what to put
+        s.write(' w KQkq - 0 1')
+        return s.getvalue()
+
+
 if __name__ == "__main__":
-    rec = ChessRecognizer('chessboard.png')
-    lines = rec._get_lines
-    print(lines)
+    HERE = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
+    im = Image.open(os.path.join(HERE, 'chessboard_1.png'))
+
+    img = cv.cvtColor(np.array(im), cv.COLOR_RGB2BGR)
+    gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+
+    # # -> Desse post: https://stackoverflow.com/questions/57161974/python-opencv-detecting-chessboard
+    # ## termination criteria
+    # criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+    # nline = 7
+    # ncol = 7
+
+    # # Find the chessboard corners
+    # ret, corners = cv.findChessboardCorners(gray, (nline, ncol))
+    # print(ret)
+    # # corners2 = cv.cornerSubPix(gray, corners, (nline, ncol), (-1, -1), criteria)
+
+    # for corner in corners:
+    #     c = corner[0]
+    #     cv.circle(img, (int(c[0]), int(c[1])), radius=2, color=(0, 0, 255), thickness=2)
+    #     # cv.circle(img, (11,11), radius=2, color=(0, 0, 255), thickness=2)
+
+    # # print(corners)
+    # cv.imshow('b_corners', img)
+    # cv.waitKey(0)
+
+    
+
+    # rec = ChessRecognizer(im)
+    # lines = rec._get_lines(rec.img_gray)
+
+    # img = rec.img
+
+    # for line in lines:
+    #     x1,y1,x2,y2 = line[0]
+    #     cv.line(img,(x1,y1),(x2,y2),(0, 0, 255) ,2)
+    # cv.imshow('board_lines', img)
+    # cv.waitKey(0)
 
 
+    # hlines, vlines = rec._get_oriented_lines(lines)
+
+    # for line in hlines:
+    #     x1,y1,x2,y2 = line
+    #     cv.line(img,(x1,y1),(x2,y2),(0, 0, 255) ,2)
 
 
+    # for line in vlines:
+    #     x1,y1,x2,y2 = line
+    #     cv.line(img,(x1,y1),(x2,y2),(255, 0, 0) ,2)
 
-    # code_board = rec.predicted_board
+    # cv.imshow('board_lines', img)
+    # cv.waitKey(0)
 
-    # # rec.show_board_lines()
-    # #print(rec)
-    # print(translate_pred_to_unicode(code_board))
+
+    # lines = self._get_lines(img_gray)
+    # horizontal_lines, vertical_lines = self._get_oriented_lines(lines)
+    # horizontal_lines, vertical_lines = self._extend_lines(horizontal_lines, vertical_lines)
+    # horizontal_lines, vertical_lines = self._filter_board_lines(horizontal_lines, vertical_lines)
+
+
+    # img = self.img
+    # board_horizontal_lines = self.board_horizontal_lines
+    # board_vertical_lines = self.board_vertical_lines
+    # # Linhas horizontais em azul
+    # for line in board_horizontal_lines:
+    #     x1,y1,x2,y2 = line
+    #     cv.line(img,(x1,y1),(x2,y2),(255, 0, 0) ,2)
+
+    # # Linhas verticais em vermelho
+    # for line in board_vertical_lines:
+    #     x1,y1,x2,y2 = line
+    #     cv.line(img,(x1,y1),(x2,y2),(0, 0, 255) ,2)
+
+    # cv.imshow('board_lines', img)
+    # cv.waitKey(0)
+
+
 
 
 
