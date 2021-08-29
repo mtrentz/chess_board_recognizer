@@ -15,8 +15,8 @@ class ChessRecognizer:
         self.Y_max, self.X_max, _ = self.img.shape
         self.HERE = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
         self.model = torch.load(os.path.join(self.HERE, 'torch_model.pth'), map_location=torch.device('cpu'))
-        self.board_horizontal_lines, self.board_vertical_lines = self._get_board_lines(self.img_gray)
-        self.board_squares = self._get_board_squares(self.board_horizontal_lines, self.board_vertical_lines)
+        self.board_horizontal_lines, self.board_vertical_lines = self.board_lines(self.img_gray)
+        self.board_squares = self.board_squares(self.board_horizontal_lines, self.board_vertical_lines)
         self.predicted_board = self.predict_board(self.img, self.model, self.board_squares)
     
 
@@ -50,10 +50,10 @@ class ChessRecognizer:
             # Calcula angulo da linha
             angle = np.rad2deg(np.arctan2(y2 - y1, x2 - x1))
 
-        if (horizontal_angle - acceptable_angle_dev) <= angle <= (horizontal_angle + acceptable_angle_dev):
-            horizontal_lines.append([x1,y1,x2,y2])
-        elif (vertical_angle - acceptable_angle_dev) <= angle <= (vertical_angle + acceptable_angle_dev):
-            vertical_lines.append([x1,y1,x2,y2])
+            if (horizontal_angle - acceptable_angle_dev) <= angle <= (horizontal_angle + acceptable_angle_dev):
+                horizontal_lines.append([x1,y1,x2,y2])
+            elif (vertical_angle - acceptable_angle_dev) <= angle <= (vertical_angle + acceptable_angle_dev):
+                vertical_lines.append([x1,y1,x2,y2])
 
         return horizontal_lines, vertical_lines
     
@@ -284,22 +284,22 @@ class ChessRecognizer:
 
         return board_squares
     
-    # def _get_board_lines(self, img_gray):
+    def board_lines(self, img_gray):
 
-    #     lines = self._get_lines(img_gray)
-    #     horizontal_lines, vertical_lines = self._get_oriented_lines(lines)
-    #     extended_horizontal_lines, extended_vertical_lines = self._extend_lines(horizontal_lines, vertical_lines)
-    #     h_gaps, v_gaps = self._get_line_gaps(extended_horizontal_lines, extended_vertical_lines)
-    #     board_horizontal_lines, board_vertical_lines = self._get_board_lines(extended_horizontal_lines, extended_vertical_lines, h_gaps, v_gaps)
+        lines = self._get_lines(img_gray)
+        horizontal_lines, vertical_lines = self._get_oriented_lines(lines)
+        extended_horizontal_lines, extended_vertical_lines = self._extend_lines(horizontal_lines, vertical_lines)
+        h_gaps, v_gaps = self._get_line_gaps(extended_horizontal_lines, extended_vertical_lines)
+        board_horizontal_lines, board_vertical_lines = self._get_board_lines(extended_horizontal_lines, extended_vertical_lines, h_gaps, v_gaps)
 
-    #     return horizontal_lines, vertical_lines
+        return board_horizontal_lines, board_vertical_lines
     
-    # def _get_board_squares(self, board_horizontal_lines, board_vertical_lines):
+    def board_squares(self, board_horizontal_lines, board_vertical_lines):
 
-    #     intersections = self._get_intersections(board_horizontal_lines, board_vertical_lines)
-    #     board_squares = self._get_board_squares(intersections)
+        intersections = self._get_intersections(board_horizontal_lines, board_vertical_lines)
+        board_squares = self._get_board_squares(intersections)
 
-    #     return board_squares
+        return board_squares
     
     def show_board_lines(self):
         img = self.img
@@ -433,13 +433,15 @@ def board_to_fen(board):
 
 if __name__ == "__main__":
     HERE = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
-    im = Image.open(os.path.join(HERE, 'chessboard_1.png'))
+    im = Image.open(os.path.join(HERE, 'chessboard_4.png'))
     
     recognizer = ChessRecognizer(im)
     predicted_board = recognizer.predicted_board
 
     unicode_matrix = translate_pred_to_unicode(predicted_board).tolist()
-    print(unicode_matrix)
+    for line in unicode_matrix:
+        print(line)
+    # print(unicode_matrix)
 
     # img = cv.cvtColor(np.array(im), cv.COLOR_RGB2BGR)
     # gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
